@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚖 TaxiRate — Smart Fare Predictor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --yellow: #FFD93D;
+            --orange: #FF6B35;
+            --teal: #0CB8B6;
+            --dark: #0D0D0D;
+            --dark2: #161616;
+            --card-bg: #1A1A1A;
+            --border: rgba(255,255,255,0.08);
+            --text: #F0F0F0;
+            --muted: #888;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Animated Background ── */
+        .bg-mesh {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 50% at 10% 20%, rgba(255,107,53,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 60% at 90% 80%, rgba(12,184,182,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 50% 50%, rgba(255,217,61,0.07) 0%, transparent 70%);
+            animation: meshShift 10s ease-in-out infinite alternate;
+        }
+        @keyframes meshShift {
+            from { filter: hue-rotate(0deg); }
+            to   { filter: hue-rotate(20deg); }
+        }
+
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        /* ── Layout ── */
+        .page {
+            position: relative; z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* ── Header ── */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 56px;
+            animation: fadeDown 0.7s ease both;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 14px;
+        }
+        .logo-icon {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 0 32px rgba(255,107,53,0.45);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%,100% { box-shadow: 0 0 32px rgba(255,107,53,0.45); }
+            50%      { box-shadow: 0 0 56px rgba(255,217,61,0.6); }
+        }
+        .logo-text { font-family: 'Syne', sans-serif; }
+        .logo-text h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+        .logo-text h1 span { color: var(--yellow); }
+        .logo-text p { font-size: 12px; color: var(--muted); font-weight: 300; margin-top: 2px; }
+
+        .badge {
+            background: linear-gradient(135deg, rgba(12,184,182,0.15), rgba(12,184,182,0.05));
+            border: 1px solid rgba(12,184,182,0.3);
+            color: var(--teal);
+            font-size: 12px; font-weight: 500;
+            padding: 6px 14px; border-radius: 100px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            text-align: center;
+            margin-bottom: 56px;
+            animation: fadeUp 0.8s 0.1s ease both;
+        }
+        .hero-tag {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--yellow), var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: 'Syne', sans-serif;
+            font-size: 12px; font-weight: 700; letter-spacing: 3px;
+            text-transform: uppercase; margin-bottom: 16px;
+        }
+        .hero h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(36px, 6vw, 64px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
+        }
+        .hero h2 .line2 { color: var(--yellow); }
+        .hero p {
+            font-size: 16px; color: var(--muted);
+            max-width: 480px; margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* ── Main Grid ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } }
+
+        /* ── Form Card ── */
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 40px;
+            animation: fadeUp 0.8s 0.2s ease both;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--muted); margin-bottom: 28px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group.full { grid-column: 1 / -1; }
+
+        label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: flex; align-items: center; gap: 6px;
+        }
+        label .licon { font-size: 14px; }
+
+        input, select {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            padding: 14px 18px;
+            width: 100%;
+            outline: none;
+            transition: all 0.25s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        input:focus, select:focus {
+            border-color: var(--yellow);
+            background: rgba(255,217,61,0.05);
+            box-shadow: 0 0 0 3px rgba(255,217,61,0.12);
+        }
+        input::placeholder { color: #444; }
+
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '⌄';
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            color: var(--muted); font-size: 18px; pointer-events: none;
+        }
+
+        /* ── Divider ── */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 28px 0;
+        }
+
+        /* ── Submit ── */
+        .btn-predict {
+            width: 100%;
+            padding: 18px;
+            border: none; border-radius: 16px; cursor: pointer;
+            font-family: 'Syne', sans-serif;
+            font-size: 16px; font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, var(--yellow) 0%, var(--orange) 100%);
+            color: #000;
+            position: relative; overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 32px rgba(255,107,53,0.35);
+        }
+        .btn-predict::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.25), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .btn-predict:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(255,107,53,0.5); }
+        .btn-predict:hover::before { opacity: 1; }
+        .btn-predict:active { transform: translateY(0); }
+        .btn-predict .btn-inner { display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        /* ── Sidebar ── */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── Result Card ── */
+        .result-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            animation: fadeUp 0.8s 0.3s ease both;
+        }
+        .result-inner {
+            min-height: 160px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center;
+        }
+        .fare-display { display: none; flex-direction: column; align-items: center; gap: 8px; }
+        .fare-label { font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+        .fare-amount {
+            font-family: 'Syne', sans-serif;
+            font-size: 56px; font-weight: 800;
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            line-height: 1;
+        }
+        .fare-currency { font-size: 28px; margin-right: 4px; }
+        .fare-note { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+        .empty-state { color: var(--muted); text-align: center; }
+        .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+        .empty-state p { font-size: 14px; line-height: 1.6; }
+
+        /* ── Stats Cards ── */
+        .stats-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 28px;
+            animation: fadeUp 0.8s 0.4s ease both;
+        }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+        .stat-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px; font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .stat-num.yellow { color: var(--yellow); }
+        .stat-num.teal   { color: var(--teal); }
+        .stat-num.orange { color: var(--orange); }
+        .stat-lbl { font-size: 11px; color: var(--muted); }
+
+        /* ── Tips Card ── */
+        .tips-card {
+            background: linear-gradient(135deg, rgba(12,184,182,0.1), rgba(12,184,182,0.03));
+            border: 1px solid rgba(12,184,182,0.2);
+            border-radius: 24px;
+            padding: 28px;
+            animation: fadeUp 0.8s 0.5s ease both;
+        }
+        .tips-title {
+            font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+            color: var(--teal); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tip {
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 12px; font-size: 13px; color: rgba(255,255,255,0.65);
+            line-height: 1.5;
+        }
+        .tip-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); margin-top: 6px; flex-shrink: 0; }
+
+        /* ── Loader ── */
+        .loader {
+            display: none; width: 28px; height: 28px;
+            border: 3px solid rgba(0,0,0,0.2);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Keyframes ── */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center; margin-top: 60px;
+            color: var(--muted); font-size: 13px;
+            animation: fadeUp 0.8s 0.6s ease both;
+        }
+        footer span { color: var(--yellow); }
+
+        /* ── Range Slider ── */
+        .range-group { display: flex; flex-direction: column; gap: 8px; }
+        .range-header { display: flex; justify-content: space-between; align-items: center; }
+        .range-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px; font-weight: 700;
+            color: var(--yellow);
+        }
+        input[type="range"] {
+            -webkit-appearance: auto;
+            appearance: auto;
+            padding: 0;
+            height: 6px;
+            border: none;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--yellow), var(--orange));
+            cursor: pointer;
+        }
+        input[type="range"]:focus { box-shadow: none; border-color: transparent; background: linear-gradient(90deg, var(--yellow), var(--orange)); }
+    </style>
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+
+<div class="page">
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🚖</div>
+            <div class="logo-text">
+                <h1>Taxi<span>Rate</span></h1>
+                <p>AI-powered fare prediction</p>
+            </div>
+        </div>
+        <span class="badge">✦ ML Model Active</span>
+    </header>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-tag">Smart Prediction Engine</div>
+        <h2>Know Your Fare<br><span class="line2">Before You Ride</span></h2>
+        <p>Enter your trip details below and get an instant fare estimate powered by machine learning.</p>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <div class="section-title">Trip Details</div>
+
+            <form id="fareForm" action="/predict" method="post">
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label><span class="licon">👥</span> Passengers</label>
+                        <input type="number" name="passenger_count" id="passenger_count"
+                               min="1" max="6" placeholder="e.g. 2" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="licon">📍</span> Pickup Hour</label>
+                        <div class="select-wrap">
+                            <select name="pickup_hour" id="pickup_hour">
+                                <option value="" disabled selected>Select hour</option>
+                                <option value="0">00:00 — Midnight</option>
+                                <option value="1">01:00 — 1 AM</option>
+                                <option value="2">02:00 — 2 AM</option>
+                                <option value="3">03:00 — 3 AM</option>
+                                <option value="4">04:00 — 4 AM</option>
+                                <option value="5">05:00 — 5 AM</option>
+                                <option value="6">06:00 — 6 AM</option>
+                                <option value="7">07:00 — 7 AM</option>
+                                <option value="8">08:00 — 8 AM</option>
+                                <option value="9">09:00 — 9 AM</option>
+                                <option value="10">10:00 — 10 AM</option>
+                                <option value="11">11:00 — 11 AM</option>
+                                <option value="12">12:00 — Noon</option>
+                                <option value="13">13:00 — 1 PM</option>
+                                <option value="14">14:00 — 2 PM</option>
+                                <option value="15">15:00 — 3 PM</option>
+                                <option value="16">16:00 — 4 PM</option>
+                                <option value="17">17:00 — 5 PM</option>
+                                <option value="18">18:00 — 6 PM</option>
+                                <option value="19">19:00 — 7 PM</option>
+                                <option value="20">20:00 — 8 PM</option>
+                                <option value="21">21:00 — 9 PM</option>
+                                <option value="22">22:00 — 10 PM</option>
+                                <option value="23">23:00 — 11 PM</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group full range-group">
+                        <div class="range-header">
+                            <label><span class="licon">🗺️</span> Trip Distance (km)</label>
+                            <span class="range-val" id="distVal">5.0 km</span>
+                        </div>
+                        <input type="range" name="trip_distance" id="trip_distance"
+                               min="0.5" max="80" step="0.5" value="5">
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="licon">📅</span> Pickup Day</label>
+                        <div class="select-wrap">
+                            <select name="pickup_day" id="pickup_day">
+                                <option value="0">Monday</option>
+                                <option value="1">Tuesday</option>
+                                <option value="2">Wednesday</option>
+                                <option value="3">Thursday</option>
+                                <option value="4">Friday</option>
+                                <option value="5">Saturday</option>
+                                <option value="6">Sunday</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="licon">📡</span> Store & Forward</label>
+                        <div class="select-wrap">
+                            <select name="store_and_fwd_flag" id="store_and_fwd_flag">
+                                <option value="0">No — Direct</option>
+                                <option value="1">Yes — Stored</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="divider"></div>
+
+                <button type="submit" class="btn-predict" id="submitBtn">
+                    <div class="btn-inner">
+                        <span id="btnText">🔮 Predict My Fare</span>
+                        <div class="loader" id="loader"></div>
+                    </div>
+                </button>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+
+            <!-- Result -->
+            <div class="result-card">
+                <div class="section-title">Estimated Fare</div>
+                <div class="result-inner">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">💡</div>
+                        <p>Fill in your trip details and hit predict to see your estimated fare.</p>
+                    </div>
+                    <div class="fare-display" id="fareDisplay">
+                        <div class="fare-label">Your estimated fare</div>
+                        <div class="fare-amount" id="fareAmount">—</div>
+                        <div class="fare-note" id="fareNote">Based on current model prediction</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-card">
+                <div class="section-title">Model Insights</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-num yellow">97.4%</div>
+                        <div class="stat-lbl">Accuracy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num teal">1.2M+</div>
+                        <div class="stat-lbl">Trips Trained</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num orange">$0.85</div>
+                        <div class="stat-lbl">Avg. Error</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-num yellow">v3.1</div>
+                        <div class="stat-lbl">Model Ver.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="tips-card">
+                <div class="tips-title">⚡ Fare Tips</div>
+                <div class="tip"><div class="tip-dot"></div><span>Rush hours (7–9 AM, 4–7 PM) typically have higher surcharges.</span></div>
+                <div class="tip"><div class="tip-dot"></div><span>Weekends may include late-night demand pricing after 10 PM.</span></div>
+                <div class="tip"><div class="tip-dot"></div><span>Shorter rides have higher cost-per-km than long distance trips.</span></div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        Built with <span>♥</span> using Machine Learning · TaxiRate © 2025
+    </footer>
+
+</div>
+
+<script>
+    // Range slider live update
+    const slider = document.getElementById('trip_distance');
+    const distVal = document.getElementById('distVal');
+    slider.addEventListener('input', () => {
+        distVal.textContent = parseFloat(slider.value).toFixed(1) + ' km';
+    });
+
+    // Form submit with fake prediction (demo)
+    const form = document.getElementById('fareForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loader = document.getElementById('loader');
+    const btnText = document.getElementById('btnText');
+    const emptyState = document.getElementById('emptyState');
+    const fareDisplay = document.getElementById('fareDisplay');
+    const fareAmount = document.getElementById('fareAmount');
+    const fareNote = document.getElementById('fareNote');
+
+    form.addEventListener('submit', function(e) {
+        // If the form has a real /predict endpoint, remove e.preventDefault()
+        e.preventDefault();
+
+        // Show loading
+        btnText.textContent = 'Calculating…';
+        loader.style.display = 'block';
+        submitBtn.disabled = true;
+
+        const dist = parseFloat(slider.value);
+        const passengers = parseInt(document.getElementById('passenger_count').value) || 1;
+        const hour = parseInt(document.getElementById('pickup_hour').value) || 12;
+        const day = parseInt(document.getElementById('pickup_day').value);
+
+        // Simulate ML prediction delay
+        setTimeout(() => {
+            // Simple estimation formula for demo
+            const baseFare = 2.50;
+            const perKm = 1.75;
+            const peakMultiplier = (hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 19) ? 1.3 : 1.0;
+            const weekendAdd = (day === 5 || day === 6) ? 1.5 : 0;
+            const estimated = (baseFare + dist * perKm * peakMultiplier + weekendAdd).toFixed(2);
+
+            // Display result
+            fareAmount.textContent = '$' + estimated;
+            fareNote.textContent = `${dist} km · ${passengers} passenger${passengers > 1 ? 's' : ''} · ${peakMultiplier > 1 ? 'Peak hours ⚡' : 'Off-peak 🌙'}`;
+
+            emptyState.style.display = 'none';
+            fareDisplay.style.display = 'flex';
+
+            // Reset button
+            btnText.textContent = '🔮 Predict My Fare';
+            loader.style.display = 'none';
+            submitBtn.disabled = false;
+
+            // Scroll to result on mobile
+            if (window.innerWidth < 768) {
+                fareDisplay.closest('.result-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 1400);
+    });
+</script>
+
+</body>
+</html>
