@@ -5,41 +5,36 @@ import os
 
 app = Flask(__name__)
 
-# Load trained model
-model = joblib.load("taxi_fare_model.pkl")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model", "taxi_fare_model.pkl")
+
+model = joblib.load(MODEL_PATH)
 
 
-# Home page
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# Prediction route
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Get values from form
         passenger_count = float(request.form['passenger_count'])
         trip_distance = float(request.form['trip_distance'])
         pickup_hour = float(request.form['pickup_hour'])
         pickup_day = float(request.form['pickup_day'])
         store_flag = float(request.form['store_and_fwd_flag'])
 
-        # IMPORTANT: must match training feature order
-        features = [
+        features = np.array([
             passenger_count,
             trip_distance,
             pickup_hour,
             pickup_day,
             store_flag
-        ]
+        ]).reshape(1, -1)
 
-        final_features = np.array(features).reshape(1, -1)
-
-        # Predict
-        prediction = model.predict(final_features)
-        output = round(prediction[0], 2)
+        prediction = model.predict(features)[0]
+        output = round(float(prediction), 2)
 
         return render_template(
             "index.html",
@@ -53,7 +48,6 @@ def predict():
         )
 
 
-# Run app (production + local compatible)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
