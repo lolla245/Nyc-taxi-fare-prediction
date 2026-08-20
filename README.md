@@ -4,8 +4,7 @@ This project uses Machine Learning to predict taxi fares in New York City using 
 This project demonstrates practical applications of data science in transportation and dynamic pricing systems.
 ---
 ## 🎯 Problem Statement
-Accurate taxi fare prediction improves pricing transparency for passengers and operational efficiency for transportation services.
-The goal of this project is to build a machine learning model that predicts taxi fare based on trip-related factors such as distance, passenger count, pickup time, and location information.
+Predict the fare of a NYC taxi trip based on trip-related features
 ---
 ## 📊 Dataset
 This project uses the **NYC Taxi Fare Prediction Dataset** from Kaggle, containing historical taxi trip records in New York City.
@@ -23,7 +22,7 @@ This project uses the **NYC Taxi Fare Prediction Dataset** from Kaggle, containi
 * Scikit-Learn
 * Matplotlib
 * Seaborn
-* Flask (for deployment)
+* Flask 
 * Jupyter Notebook
 ---
 ## 🔄 Project Workflow
@@ -38,7 +37,7 @@ This project uses the **NYC Taxi Fare Prediction Dataset** from Kaggle, containi
 ## 🤖 Models Used
 * Linear Regression
 * Random Forest Regressor
-* XGBoost (optional / if used)
+* XGBoost 
 ---
 ## 📈 Evaluation Metrics
 * Root Mean Squared Error (RMSE)
