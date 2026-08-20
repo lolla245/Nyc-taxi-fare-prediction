@@ -28,15 +28,10 @@ This project uses the **NYC Taxi Fare Prediction Dataset** from Kaggle, containi
 7. Prediction & Deployment
 ---
 ## 🤖 Models Used
-* Linear Regression
-* Random Forest Regressor
-* XGBoost 
+* Linear Regression, sRandom Forest Regressor, XGBoost 
 ---
 ## 📈 Evaluation Metrics
-* Root Mean Squared Error (RMSE)
-* Mean Absolute Error (MAE)
-* R² Score
-## 🏁 Results
+* Root Mean Squared Error (RMSE), Mean Absolute Error (MAE), R² Score, 🏁 Results
 The trained model predicts taxi fares with good accuracy and can be used as a fare estimation system for ride-booking applications.
 ## 📁 Project Structure
 NYC-Taxi-Fare-Prediction/
