@@ -16,14 +16,7 @@ This project uses the **NYC Taxi Fare Prediction Dataset** from Kaggle, containi
 * Fare Amount (Target Variable)
 ---
 ## 🛠 Tech Stack
-* Python
-* Pandas
-* NumPy
-* Scikit-Learn
-* Matplotlib
-* Seaborn
-* Flask 
-* Jupyter Notebook
+* Python, Pandas, NumPy, Scikit-Learn, Matplotlib, Seaborn, Flask, Jupyter Notebook
 ---
 ## 🔄 Project Workflow
 1. Data Collection
